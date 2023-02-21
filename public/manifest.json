@@ -1,0 +1,9 @@
+{
+  "short_name": "Where's MK",
+  "name": "Mortal Kombat Photo Tagging",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
