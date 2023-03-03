@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import uniqid from 'uniqid';
+import mkimage from './images/waldo-style-MK.jpeg';
 import DropDown from './components/DropDown';
 import Header from './components/Header';
 import TargetBox from './components/TargetBox';
@@ -40,28 +41,58 @@ const App = () => {
   // };
 
   const handleElementClick = (e) => {
-    setShow(true);
+    setShow(!show);
     setTargetX(e.pageX);
     setTargetY(e.pageY);
   };
 
+  const useOnClickOutside = (ref, handler) => {
+    useEffect(() => {
+      const listener = (e) => {
+        if (
+          !ref.current ||
+          ref.current.contains(e.target) ||
+          e.target.className === 'dropdown__item'
+        ) {
+          return;
+        }
+        handler(e);
+      };
+      document.addEventListener('mousedown', listener);
+      document.addEventListener('touchstart', listener);
+
+      return () => {
+        document.removeEventListener('mousedown', listener);
+        document.removeEventListener('touchstart', listener);
+      };
+    }, [ref, handler]);
+  };
+
+  const handleHideTargetBox = () => setShow(false);
+  const mkImageRef = useRef();
+
+  useOnClickOutside(mkImageRef, handleHideTargetBox);
+
   return (
     <div className="main-layout">
-      <Header time={time} />
-      <DropDown
-        show={show}
-        x={targetX}
-        y={targetY}
-        chars={chars}
-        setChars={setChars}
-      />
-      <TargetBox show={show} x={targetX} y={targetY} />
+      <Header time={time} handleHideTargetBox={handleHideTargetBox} />
+      {show ? (
+        <div>
+          <DropDown x={targetX} y={targetY} chars={chars} setChars={setChars} />{' '}
+          <TargetBox x={targetX} y={targetY} />
+        </div>
+      ) : null}
       <main
         className="main-content"
         onClick={(handleStart, handleElementClick)}
         onKeyDown={handleStart}
       >
-        <p>This is where the main picture will go for the photo tagging.</p>
+        <img
+          ref={mkImageRef}
+          className="main-content__image"
+          src={mkimage}
+          alt="waldo style MK"
+        />
       </main>
       <footer className="footer">
         <p className="footer__madeby">Made by Sean Kempt</p>

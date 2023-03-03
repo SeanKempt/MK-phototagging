@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 
-const TargetBox = ({ show, x, y }) => (
+const TargetBox = ({ x, y }) => (
   <div
     className="targetbox"
     style={{
-      display: show ? 'block' : 'none',
       position: 'absolute',
       left: `${x - 25}px`, // ! adjusted due to the box being offset for the picture
       top: `${y - 25}px`,
@@ -16,7 +15,6 @@ const TargetBox = ({ show, x, y }) => (
 );
 
 TargetBox.propTypes = {
-  show: PropTypes.bool,
   x: PropTypes.number,
   y: PropTypes.number,
 };
