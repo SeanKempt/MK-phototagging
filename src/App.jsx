@@ -11,15 +11,19 @@ const App = () => {
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [show, setShow] = useState(false);
-  const [targetX, setTargetX] = useState(0);
-  const [targetY, setTargetY] = useState(0);
-  const [chars, setChars] = useState([
-    { name: 'Raiden', id: uniqid() },
-    { name: 'Subzero', id: uniqid() },
-    { name: 'Jaxs', id: uniqid() },
-  ]);
+  const [coords, setCoords] = useState({
+    targetX: 0,
+    targetY: 0,
+    adjCoords: { x: 0, y: 0 },
+  });
+  const [chars, setChars] = useState({
+    Raiden: { name: 'Raiden', id: uniqid(), x: 38, y: 35 },
+    Subzero: { name: 'Subzero', id: uniqid(), x: 2, y: 35 },
+    Jaxs: { name: 'Jaxs', id: uniqid(), x: 85, y: 26 },
+  });
 
   useEffect(() => {
+    // Provides the timer that is available in the header
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
@@ -41,12 +45,40 @@ const App = () => {
   // };
 
   const handleElementClick = (e) => {
+    // This is what renders the target box on the main div element
     setShow(!show);
-    setTargetX(e.pageX);
-    setTargetY(e.pageY);
+    const newCoords = getImageClickCoords(e);
+    setCoords((prevCoords) => ({
+      ...prevCoords,
+      targetX: e.nativeEvent.offsetX,
+      targetY: e.nativeEvent.offsetY,
+      adjCoords: { x: newCoords.xCoord, y: newCoords.yCoord },
+    }));
+    console.log(coords);
+  };
+
+  const handleListItem = (c) => {
+    // todo: need to change this for an object instead of array, now that chars data structure has changed.
+    setChars(chars.filter((cs) => c.id !== cs.id));
+  };
+
+  const checkIfValid = (charName) => {
+    // the reason for all of the checks here is to give some leeway for users that click in different spots near the character
+    if (
+      coords.adjCoords.x <= chars[charName].x + 3 &&
+      coords.adjCoords.x >= chars[charName].x - 3 &&
+      coords.adjCoords.y <= chars[charName].y + 3 &&
+      coords.adjCoords.y >= chars[charName].y - 3
+    ) {
+      console.log(`congratulations you are correct!`);
+      handleListItem(charName);
+    } else {
+      console.log(`you are wrong, try again!`);
+    }
   };
 
   const useOnClickOutside = (ref, handler) => {
+    // custom hook to handle whenever the user clicks outside of the image to hide the targetbox
     useEffect(() => {
       const listener = (e) => {
         if (
@@ -69,7 +101,20 @@ const App = () => {
   };
 
   const handleHideTargetBox = () => setShow(false);
+
   const mkImageRef = useRef();
+
+  const getImageClickCoords = (e) => {
+    // Provides the x and y coordinate of where on the image the user has clicked and removes the padding and other alterations.
+    const xCoord = Math.round(
+      (e.nativeEvent.offsetX / e.nativeEvent.target.offsetWidth) * 100
+    );
+    const yCoord = Math.round(
+      (e.nativeEvent.offsetY / e.nativeEvent.target.offsetHeight) * 100
+    );
+    const newXY = { xCoord, yCoord };
+    return newXY;
+  };
 
   useOnClickOutside(mkImageRef, handleHideTargetBox);
 
@@ -78,13 +123,21 @@ const App = () => {
       <Header time={time} handleHideTargetBox={handleHideTargetBox} />
       {show ? (
         <div>
-          <DropDown x={targetX} y={targetY} chars={chars} setChars={setChars} />{' '}
-          <TargetBox x={targetX} y={targetY} />
+          <DropDown
+            x={coords.targetX}
+            y={coords.targetY}
+            chars={chars}
+            checkIfValid={checkIfValid}
+          />{' '}
+          <TargetBox x={coords.targetX} y={coords.targetY} />
         </div>
       ) : null}
       <main
         className="main-content"
-        onClick={(handleStart, handleElementClick)}
+        onClick={(e) => {
+          handleStart();
+          handleElementClick(e);
+        }}
         onKeyDown={handleStart}
       >
         <img
