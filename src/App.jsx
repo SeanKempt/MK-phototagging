@@ -11,6 +11,7 @@ const App = () => {
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [show, setShow] = useState(false);
+  const [score, setScore] = useState(0);
   const [coords, setCoords] = useState({
     targetX: 0,
     targetY: 0,
@@ -45,7 +46,7 @@ const App = () => {
   // };
 
   const handleElementClick = (e) => {
-    // This is what renders the target box on the main div element
+    // This is what renders the target box on the main div element and sets coordinate state
     setShow(!show);
     const newCoords = getImageClickCoords(e);
     setCoords((prevCoords) => ({
@@ -54,16 +55,16 @@ const App = () => {
       targetY: e.nativeEvent.offsetY,
       adjCoords: { x: newCoords.xCoord, y: newCoords.yCoord },
     }));
-    console.log(coords);
   };
 
-  const handleListItem = (c) => {
-    // todo: need to change this for an object instead of array, now that chars data structure has changed.
-    setChars(chars.filter((cs) => c.id !== cs.id));
+  const handleRemoveListItem = (c) => {
+    const newChars = { ...chars };
+    delete newChars[c];
+    setChars(newChars);
   };
 
   const checkIfValid = (charName) => {
-    // the reason for all of the checks here is to give some leeway for users that click in different spots near the character
+    // the reason for all of the checks here is to give some leeway for users that click in different spots near the character. if it is within +/- 3 its correct.
     if (
       coords.adjCoords.x <= chars[charName].x + 3 &&
       coords.adjCoords.x >= chars[charName].x - 3 &&
@@ -71,11 +72,16 @@ const App = () => {
       coords.adjCoords.y >= chars[charName].y - 3
     ) {
       console.log(`congratulations you are correct!`);
-      handleListItem(charName);
+      handleScoreIncrease();
+      handleRemoveListItem(charName);
+      handleHideTargetBox();
     } else {
       console.log(`you are wrong, try again!`);
+      handleHideTargetBox();
     }
   };
+
+  const handleScoreIncrease = () => setScore(score + 1);
 
   const useOnClickOutside = (ref, handler) => {
     // custom hook to handle whenever the user clicks outside of the image to hide the targetbox
@@ -120,7 +126,11 @@ const App = () => {
 
   return (
     <div className="main-layout">
-      <Header time={time} handleHideTargetBox={handleHideTargetBox} />
+      <Header
+        time={time}
+        handleHideTargetBox={handleHideTargetBox}
+        score={score}
+      />
       {show ? (
         <div>
           <DropDown
