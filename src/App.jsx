@@ -5,6 +5,7 @@ import mkimage from './images/waldo-style-MK.jpeg';
 import DropDown from './components/DropDown';
 import Header from './components/Header';
 import TargetBox from './components/TargetBox';
+import AlertPopup from './components/AlertPopup';
 import './sass/styles.scss';
 
 const App = () => {
@@ -12,6 +13,10 @@ const App = () => {
   const [isActive, setIsActive] = useState(false);
   const [show, setShow] = useState(false);
   const [score, setScore] = useState(0);
+  const [alert, setAlert] = useState({
+    show: false,
+    status: null,
+  });
   const [coords, setCoords] = useState({
     targetX: 0,
     targetY: 0,
@@ -28,7 +33,7 @@ const App = () => {
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 10); // ! idk about this...it really should just be using the state for time and not tis previous time.
+        setTime((prevTime) => prevTime + 10);
       }, 10);
     } else {
       clearInterval(interval);
@@ -44,6 +49,18 @@ const App = () => {
   //   setIsActive(false);
   //   setTime(0);
   // };
+
+  const getImageClickCoords = (e) => {
+    // Provides the x and y coordinate of where on the image the user has clicked and removes the padding and other alterations.
+    const xCoord = Math.round(
+      (e.nativeEvent.offsetX / e.nativeEvent.target.offsetWidth) * 100
+    );
+    const yCoord = Math.round(
+      (e.nativeEvent.offsetY / e.nativeEvent.target.offsetHeight) * 100
+    );
+    const newXY = { xCoord, yCoord };
+    return newXY;
+  };
 
   const handleElementClick = (e) => {
     // This is what renders the target box on the main div element and sets coordinate state
@@ -63,7 +80,30 @@ const App = () => {
     setChars(newChars);
   };
 
+  const hideAlert = () => {
+    setTimeout(() => {
+      setAlert((prevAlert) => ({
+        ...prevAlert,
+        show: false,
+      }));
+    }, 3000);
+  };
+
+  const handleAlerts = (flag) => {
+    setAlert((prevAlert) => ({
+      ...prevAlert,
+      show: true,
+      status: flag,
+    }));
+    hideAlert();
+  };
+
+  const handleScoreIncrease = () => setScore(score + 1);
+
+  const handleHideTargetBox = () => setShow(false);
+
   const checkIfValid = (charName) => {
+    // todo: I really should clean up this function, looks really messy and big
     // the reason for all of the checks here is to give some leeway for users that click in different spots near the character. if it is within +/- 3 its correct.
     if (
       coords.adjCoords.x <= chars[charName].x + 3 &&
@@ -71,17 +111,15 @@ const App = () => {
       coords.adjCoords.y <= chars[charName].y + 3 &&
       coords.adjCoords.y >= chars[charName].y - 3
     ) {
-      console.log(`congratulations you are correct!`);
+      handleAlerts('correct');
       handleScoreIncrease();
       handleRemoveListItem(charName);
       handleHideTargetBox();
     } else {
-      console.log(`you are wrong, try again!`);
+      handleAlerts('incorrect');
       handleHideTargetBox();
     }
   };
-
-  const handleScoreIncrease = () => setScore(score + 1);
 
   const useOnClickOutside = (ref, handler) => {
     // custom hook to handle whenever the user clicks outside of the image to hide the targetbox
@@ -106,21 +144,7 @@ const App = () => {
     }, [ref, handler]);
   };
 
-  const handleHideTargetBox = () => setShow(false);
-
   const mkImageRef = useRef();
-
-  const getImageClickCoords = (e) => {
-    // Provides the x and y coordinate of where on the image the user has clicked and removes the padding and other alterations.
-    const xCoord = Math.round(
-      (e.nativeEvent.offsetX / e.nativeEvent.target.offsetWidth) * 100
-    );
-    const yCoord = Math.round(
-      (e.nativeEvent.offsetY / e.nativeEvent.target.offsetHeight) * 100
-    );
-    const newXY = { xCoord, yCoord };
-    return newXY;
-  };
 
   useOnClickOutside(mkImageRef, handleHideTargetBox);
 
@@ -142,6 +166,7 @@ const App = () => {
           <TargetBox x={coords.targetX} y={coords.targetY} />
         </div>
       ) : null}
+      {alert.show ? <AlertPopup alert={alert} /> : null}
       <main
         className="main-content"
         onClick={(e) => {

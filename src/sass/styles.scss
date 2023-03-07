@@ -1,4 +1,5 @@
 @import 'reset.scss';
+@import '~bootstrap/scss/bootstrap';
 
 @font-face {
   font-family: 'MK5';
@@ -15,6 +16,14 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   grid-template-rows: auto 1fr auto;
+}
+
+.alert {
+  position: fixed;
+  width: 50%;
+  top: 90px;
+  left: 20rem;
+  text-align: center;
 }
 
 .header {
