@@ -4,7 +4,7 @@ import Timer from './Timer';
 const Header = ({ time, score }) => (
   <div>
     <header className="header">
-      <h1 className="header__title">Where's MK</h1>
+      <h1 className="header__title">MK: Test your sight</h1>
       <section className="header__gameinfo">
         <Timer time={time} />
         <div>Score: {score}/3</div>
