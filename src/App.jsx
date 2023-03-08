@@ -24,7 +24,7 @@ const App = () => {
   });
   const [chars, setChars] = useState({
     Raiden: { name: 'Raiden', id: uniqid(), x: 38, y: 35 },
-    Subzero: { name: 'Subzero', id: uniqid(), x: 2, y: 35 },
+    Subzero: { name: 'Subzero', id: uniqid(), x: 55, y: 55 },
     Jaxs: { name: 'Jaxs', id: uniqid(), x: 85, y: 26 },
   });
 
@@ -184,6 +184,7 @@ const App = () => {
       </main>
       <footer className="footer">
         <p className="footer__madeby">Made by Sean Kempt</p>
+        <p>Illustration by Gus Morais</p>
       </footer>
     </div>
   );

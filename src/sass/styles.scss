@@ -2,13 +2,20 @@
 @import '~bootstrap/scss/bootstrap';
 
 @font-face {
-  font-family: 'MK5';
-  src: url(../fonts/MortalKombat5.woff) format('woff'),
-    url(../fonts/MortalKombat5.woff2) format('woff2');
+  font-family: 'MK11';
+  src: url(../fonts/Mortal-Kombat-MK11.woff2) format('woff2');
 }
 
 body {
-  font-family: 'MK5', sans-serif;
+  font-family: 'MK11', sans-serif;
+}
+
+h1 {
+  margin-bottom: 0;
+}
+
+.guidemodal__button {
+  margin-right: 2rem;
 }
 
 .main-layout {
@@ -42,13 +49,16 @@ body {
 
 .header__gameinfo {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 
 .footer {
   background-color: black;
   display: flex;
   justify-content: center;
+  flex-direction: column;
   align-items: center;
   color: #ff9e01;
 }
