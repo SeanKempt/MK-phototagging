@@ -1,6 +1,10 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import { useState, useEffect, useRef } from 'react';
 import uniqid from 'uniqid';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import firebaseConfig from './firebase-config';
+import Scoreboard from './components/Scoreboard';
 import mkimage from './images/waldo-style-MK.jpeg';
 import DropDown from './components/DropDown';
 import Header from './components/Header';
@@ -28,6 +32,24 @@ const App = () => {
     Jaxs: { name: 'Jaxs', id: uniqid(), x: 85, y: 26 },
   });
 
+  // ! Firebase stuff - probably need to move this to its own sperate file to not bog things down in this app file
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const isGameOver = () => {
+    if (score >= 2) {
+      return setIsActive(false);
+    }
+  };
+
+  const setHighscore = (initials, gameTime) => {
+    db.collection('games').add({
+      name: [initials],
+      time: [gameTime],
+      date: new Date(),
+    });
+  };
+
   useEffect(() => {
     // Provides the timer that is available in the header
     let interval = null;
@@ -45,10 +67,10 @@ const App = () => {
 
   const handleStart = () => setIsActive(true);
 
-  // const handleReset = () => {
-  //   setIsActive(false);
-  //   setTime(0);
-  // };
+  const handleReset = () => {
+    setIsActive(false);
+    setTime(0);
+  };
 
   const getImageClickCoords = (e) => {
     // Provides the x and y coordinate of where on the image the user has clicked and removes the padding and other alterations.
@@ -113,6 +135,7 @@ const App = () => {
     ) {
       handleAlerts('correct');
       handleScoreIncrease();
+      isGameOver();
       handleRemoveListItem(charName);
       handleHideTargetBox();
     } else {
@@ -167,6 +190,7 @@ const App = () => {
         </div>
       ) : null}
       {alert.show ? <AlertPopup alert={alert} /> : null}
+      {score >= 3 ? <Scoreboard /> : null}
       <main
         className="main-content"
         onClick={(e) => {

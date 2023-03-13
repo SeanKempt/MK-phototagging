@@ -14,8 +14,15 @@ h1 {
   margin-bottom: 0;
 }
 
-.guidemodal__button {
+.guidemodal__button,
+.scoreboard__button {
   margin-right: 2rem;
+  background-color: #ff9e01;
+  border: #ff9e01;
+}
+
+.modal__body__subtext {
+  text-align: center;
 }
 
 .main-layout {
