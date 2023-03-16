@@ -25,7 +25,7 @@ const Guide = () => {
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title>Character Guide</Modal.Title>
         </Modal.Header>
         <Modal.Body>

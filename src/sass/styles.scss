@@ -21,8 +21,33 @@ h1 {
   border: #ff9e01;
 }
 
+.scoreboard__form {
+  margin-bottom: 2rem;
+}
+
+.modal-header {
+  display: block;
+  text-align: center;
+}
+
+.scoreboard__form--title {
+  padding-right: 0.5rem;
+}
+
 .modal__body__subtext {
   text-align: center;
+}
+
+.modal__body__highscores--score {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  justify-content: center;
+  justify-items: center;
+}
+
+.score__labels {
+  border-bottom: 1px solid black;
 }
 
 .main-layout {

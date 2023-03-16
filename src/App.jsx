@@ -2,7 +2,15 @@
 import { useState, useEffect, useRef } from 'react';
 import uniqid from 'uniqid';
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  getDocs,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
 import firebaseConfig from './firebase-config';
 import Scoreboard from './components/Scoreboard';
 import mkimage from './images/waldo-style-MK.jpeg';
@@ -13,10 +21,12 @@ import AlertPopup from './components/AlertPopup';
 import './sass/styles.scss';
 
 const App = () => {
+  const [username, setUsername] = useState('');
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [show, setShow] = useState(false);
   const [score, setScore] = useState(0);
+  const [highscores, setHighscores] = useState([]);
   const [alert, setAlert] = useState({
     show: false,
     status: null,
@@ -36,22 +46,43 @@ const App = () => {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const isGameOver = () => {
-    if (score >= 2) {
-      return setIsActive(false);
+  const logPlayerScore = async (initials, gameTime) => {
+    try {
+      const today = new Date();
+      await addDoc(collection(db, 'games'), {
+        name: [initials],
+        time: [gameTime],
+        date: today.toLocaleDateString(),
+      });
+    } catch (e) {
+      console.error('Error adding document: ', e);
     }
   };
 
-  const setHighscore = (initials, gameTime) => {
-    db.collection('games').add({
-      name: [initials],
-      time: [gameTime],
-      date: new Date(),
+  // gets data from firebase for the winner with the lowest amount of time
+  const getHighScores = async () => {
+    const q = query(collection(db, 'games'), orderBy('time'), limit(5));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.forEach((doc) => {
+      console.log(highscores);
+      return setHighscores((prevHs) => [...prevHs, doc.data()]);
     });
   };
 
+  const isGameOver = () => {
+    if (score >= 2) {
+      setIsActive(false);
+    }
+  };
+
+  // passed as prop to scoreboard for the initials submit button that way it sends the data to firebase
+  const handleSubmit = () => {
+    logPlayerScore(username, time);
+    return getHighScores();
+  };
+
+  // Provides the timer that is available in the header
   useEffect(() => {
-    // Provides the timer that is available in the header
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
@@ -67,13 +98,24 @@ const App = () => {
 
   const handleStart = () => setIsActive(true);
 
+  // Stops the timer and sets the timer back to zero
   const handleReset = () => {
     setIsActive(false);
     setTime(0);
   };
 
+  const handlePlayAgain = () => {
+    handleReset();
+    setScore(0);
+    setChars({
+      Raiden: { name: 'Raiden', id: uniqid(), x: 38, y: 35 },
+      Subzero: { name: 'Subzero', id: uniqid(), x: 55, y: 55 },
+      Jaxs: { name: 'Jaxs', id: uniqid(), x: 85, y: 26 },
+    });
+  };
+
+  // provides the x and y coordinate in a simple form with only two digits ; stays the same no matter the size of the photo
   const getImageClickCoords = (e) => {
-    // Provides the x and y coordinate of where on the image the user has clicked and removes the padding and other alterations.
     const xCoord = Math.round(
       (e.nativeEvent.offsetX / e.nativeEvent.target.offsetWidth) * 100
     );
@@ -84,8 +126,8 @@ const App = () => {
     return newXY;
   };
 
+  // This is what renders the target box on the main div element and sets coordinate state
   const handleElementClick = (e) => {
-    // This is what renders the target box on the main div element and sets coordinate state
     setShow(!show);
     const newCoords = getImageClickCoords(e);
     setCoords((prevCoords) => ({
@@ -96,6 +138,7 @@ const App = () => {
     }));
   };
 
+  // removes the items from the dropdown list after the user has successfully found the character
   const handleRemoveListItem = (c) => {
     const newChars = { ...chars };
     delete newChars[c];
@@ -124,6 +167,7 @@ const App = () => {
 
   const handleHideTargetBox = () => setShow(false);
 
+  // Triggers once the user has clicked on the dropdown of a character name and preforms the checks if its valid
   const checkIfValid = (charName) => {
     // todo: I really should clean up this function, looks really messy and big
     // the reason for all of the checks here is to give some leeway for users that click in different spots near the character. if it is within +/- 3 its correct.
@@ -135,7 +179,7 @@ const App = () => {
     ) {
       handleAlerts('correct');
       handleScoreIncrease();
-      isGameOver();
+      isGameOver(); // checks if the score 3/3 is reached
       handleRemoveListItem(charName);
       handleHideTargetBox();
     } else {
@@ -144,8 +188,8 @@ const App = () => {
     }
   };
 
+  // custom hook to handle whenever the user clicks outside of the image to hide the targetbox
   const useOnClickOutside = (ref, handler) => {
-    // custom hook to handle whenever the user clicks outside of the image to hide the targetbox
     useEffect(() => {
       const listener = (e) => {
         if (
@@ -165,6 +209,10 @@ const App = () => {
         document.removeEventListener('touchstart', listener);
       };
     }, [ref, handler]);
+  };
+
+  const handleNameChange = (e) => {
+    setUsername(e.target.value);
   };
 
   const mkImageRef = useRef();
@@ -190,7 +238,15 @@ const App = () => {
         </div>
       ) : null}
       {alert.show ? <AlertPopup alert={alert} /> : null}
-      {score >= 3 ? <Scoreboard /> : null}
+      {score >= 3 ? (
+        <Scoreboard
+          handlePlayAgain={handlePlayAgain}
+          username={username}
+          handleNameChange={handleNameChange}
+          handleSubmit={handleSubmit}
+          highscores={highscores}
+        />
+      ) : null}
       <main
         className="main-content"
         onClick={(e) => {
