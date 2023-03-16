@@ -57,7 +57,6 @@ const Scoreboard = ({
               <p>Name</p>
               <p>Time</p>
             </div>
-            g
             {highscores.map((hs) => (
               // todo - get the time to show in mins:seconds for the time
               <div className="modal__body__highscores--score" key={uniqid()}>
